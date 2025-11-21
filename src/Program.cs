@@ -4,6 +4,7 @@ internal class Program
 {
     static void Main()
     {
+        bool classicTicTacToe = false;
         HashSet<ulong> playStates = [];
         HashSet<ulong> winStates = [];
         HashSet<ulong> drawnStates = [];
@@ -20,16 +21,19 @@ internal class Program
             }
             uint step = TicTacToeState.StepOf(state);
             state = TicTacToeState.WithStep(state, step);
-            uint currentRound = (step >> 1) % 3;
+            uint currentRound = classicTicTacToe ? 0 : ((step >> 1) % 3);
             uint currentPlayer = (step & 1) + 1;
             ulong currentSign = (currentRound << 2) | currentPlayer;
             ulong mask = 0xF;
-            for (int offset = 0; offset < 4 * 9; offset += 4, mask <<= 4)
+            if (!classicTicTacToe)
             {
-                if ((state & mask) == (currentSign << offset))
+                for (int offset = 0; offset < 4 * 9; offset += 4, mask <<= 4)
                 {
-                    state &= ~mask;
-                    break;
+                    if ((state & mask) == (currentSign << offset))
+                    {
+                        state &= ~mask;
+                        break;
+                    }
                 }
             }
             mask = 0xF;
@@ -48,8 +52,8 @@ internal class Program
             if (drawn)
                 drawnStates.Add(state);
         }
-
-        Console.WriteLine("Count of Drawn States: " + drawnStates.Count); // Should be zero
+        Console.WriteLine("Count of All End States: " + (drawnStates.Count + winStates.Count));
+        Console.WriteLine("Count of Drawn States: " + drawnStates.Count); // Should be zero when classicTicTacToe = false
         Console.WriteLine("Count of All Win States: " + winStates.Count);
         Console.WriteLine("Count of Player1 Win States: " + winStates.Count(it => (TicTacToeState.StepOf(it) & 1) == 0));
         Console.WriteLine("Count of Player2 Win States: " + winStates.Count(it => (TicTacToeState.StepOf(it) & 1) == 1));
